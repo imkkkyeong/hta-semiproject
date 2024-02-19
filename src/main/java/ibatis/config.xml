@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN" 
+"http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+
+<settings useStatementNamespaces="true"/>
+
+
+								<!-- 여긴 수정 금지입니다 -->
+	<transactionManager type="JDBC">
+	  	  <dataSource type="SIMPLE">
+	  	  	  <property name="JDBC.Driver" value="oracle.jdbc.OracleDriver"/>
+	  	  	  <property name="JDBC.ConnectionURL" value="jdbc:oracle:thin:@192.168.0.8:1521:xe"/>
+	  	  	  <property name="JDBC.Username" value="wouldyou"/>
+	  	  	  <property name="JDBC.Password" value="zxcv1234"/>
+	  	  </dataSource>
+	  </transactionManager>
+	  
+	  <!-- 
+	  	매핑된 SQL 구문이 정의된 SQL Mapper 파일의 경로를 등록하는 태그
+	  	
+	  	여기에 각자의 xml을 등록하세요
+	   -->
+	  <sqlMap resource="ibatis/mappers/admins.xml" />
+	  <sqlMap resource="ibatis/mappers/boards.xml" />
+	  <sqlMap resource="ibatis/mappers/board-replies.xml" />
+	  <sqlMap resource="ibatis/mappers/board-image.xml" />
+	  <sqlMap resource="ibatis/mappers/books.xml" />
+	  <sqlMap resource="ibatis/mappers/sellers.xml" />
+	  <sqlMap resource="ibatis/mappers/seller-estimates.xml" />
+	  <sqlMap resource="ibatis/mappers/seller-management.xml" />
+	  <sqlMap resource="ibatis/mappers/seller-profiles.xml" />
+	  <sqlMap resource="ibatis/mappers/seller-deposit.xml" />
+	  <sqlMap resource="ibatis/mappers/users.xml" />
+	  <sqlMap resource="ibatis/mappers/user_estimates.xml" />
+	  <sqlMap resource="ibatis/mappers/user-management.xml" />
+</sqlMapConfig>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+        PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="board-replies">
+
+<insert id= "insertReply" parameterClass="vo.Reply">
+	 INSERT INTO BOARD_REPLY
+            (BOARD_REPLY_NO, USER_NO, BOARD_NO, board_REPLY_CONTENT)
+      VALUES (REPLY_SEQ.nextval, #users.no#, #board.no#, #content#)
+</insert>
+
+<select id="getRepliesByBoardNo" parameterClass="int" resultClass="vo.Reply">
+        select r.BOARD_REPLY_NO		   			as no,
+                r.USER_NO                 		as "users.no",
+                u.user_id                 		as "users.id",
+                r.BOARD_REPLY_CONTENT           as content,
+                r.BOARD_REPLY_DEL_YN            as delyn,
+                r.BOARD_REPLY_UPDATE_DATE       as updateDate,
+                r.BOARD_REPLY_REG_DATE       	as regDate
+        from
+            board_reply r, users u
+        where r.BOARD_NO = #value#
+          and r.user_no = u.user_no
+        order by r.BOARD_REPLY_NO asc
+    </select>
+
+
+</sqlMap>

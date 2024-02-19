@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+        PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+                
+<sqlMap namespace="seller-deposit">
+
+	<select id="getSellerDeposits" parameterClass="map" resultClass="dto.SellerDepositDto">
+		select 
+		    user_name as "userName", 
+		    seller_estimate_no as "sellerEstimateNo", 
+		    seller_estimate_amount as "sellerEstimateAmount",
+		    user_estimate_moving_date as "userEstimateMovingDate"
+		from 
+			(select 
+				row_number() over (order by seller_deposit_no desc) num,
+                 U.user_name, 
+		         SE.seller_estimate_no, 
+		         SE.seller_estimate_amount,
+		         UE.user_estimate_moving_date
+			 from seller_deposit X, seller_estimate SE, user_estimate UE, users U
+             where 
+                X.seller_no = #sellerNo#
+                and SE.status_no = 100002
+                and X.seller_estimate_no = SE.seller_estimate_no
+                and SE.user_estimate_no = UE.user_estimate_no
+                and UE.user_no = U.user_no
+                and UE.user_estimate_moving_date between to_date(#startDate#, 'YYYY-MM-DD') and to_date(#endDate#, 'YYYY-MM-DD') ) 
+		where 
+		    num between #begin# and #end#
+	</select>
+
+	<select id="getSellerDepositsRows" parameterClass="map" resultClass="int">
+		select 
+		    count(*)
+		from 
+		    seller_deposit D, seller_estimate SE, user_estimate UE, users U
+		where 
+		    D.seller_no = #sellerNo#
+		    and SE.status_no = 100002
+		    and D.seller_estimate_no = SE.seller_estimate_no
+		    and SE.user_estimate_no = UE.user_estimate_no
+		    and UE.user_no = U.user_no
+		    and UE.user_estimate_moving_date between to_date(#startDate#, 'YYYY-MM-DD') and to_date(#endDate#, 'YYYY-MM-DD')
+	</select>
+</sqlMap>

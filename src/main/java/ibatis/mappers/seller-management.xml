@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+	
+<sqlMap namespace="seller-management">
+	
+	<select id="getSellers" parameterClass="map" resultClass="dto.admin.SellerManagementDto">
+		
+		SELECT		seller_no 			AS no,
+					seller_name 		AS name,
+					seller_id 			AS id,
+					service,
+					seller_tel 			AS tel,
+					seller_reg_date		AS regDate
+
+		FROM (	SELECT  seller_no,
+						seller_name,
+						seller_id,
+						service,
+						seller_tel,
+						seller_reg_date,
+						row_number() over (order by seller_no desc) AS num
+				
+				FROM	(	SELECT DISTINCT A.seller_no,
+											A.seller_name,
+											A.seller_id,
+											LISTAGG(D.short_service_name, ', ') WITHIN GROUP (ORDER BY D.service_no) OVER (PARTITION BY A.seller_no) AS service,						
+											A.seller_tel,
+											A.seller_reg_date
+											
+							FROM 			seller						A,
+											seller_info 				B,
+											seller_support_services 	C, 
+											seller_services 			D
+											 
+							WHERE			A.seller_del_yn = 'N'
+							AND				A.seller_no = B.seller_no
+							AND				B.seller_info_no = C.seller_info_no
+							AND 			C.service_no = D.service_no
+							
+							<isEqual property="opt" compareValue="id">
+						  		AND 	A.seller_id like '%'||#keyword#||'%'
+						  	</isEqual>			  	 
+						  	
+					      	<isEqual property="opt" compareValue="name">
+						  	 	AND 	A.seller_name like '%'||#keyword#||'%'
+						  	</isEqual>			  	 
+						  	
+					      	<isEqual property="opt" compareValue="tel">
+						  	 	AND 	A.seller_tel = #keyword#
+						  	</isEqual>	
+						  			  	 
+						  	<isNotNull property="fromDate">
+						  	 	AND 	A.seller_reg_date >= #fromDate# 
+						  	</isNotNull>
+						  				  	 
+						  	<isNotNull property="toDate">
+						   	 	AND 	A.seller_reg_date &lt; to_date(#toDate#) + 1
+						  	</isNotNull>
+					
+							<isEqual property="service" compareValue="가정">
+								AND 	D.short_service_name = #service#
+							</isEqual>
+							
+							<isEqual property="service" compareValue="국내">
+								AND 	D.short_service_name = #service#
+							</isEqual>
+							 
+							<isEqual property="service" compareValue="원룸">
+								AND 	D.short_service_name = #service#
+							</isEqual>
+							 
+							<isEqual property="service" compareValue="사무실">
+								AND 	D.short_service_name = #service#
+							</isEqual>
+						)
+			)
+		
+		WHERE		num between #begin# and #end#
+		
+		ORDER BY	
+					<isEqual property="sort" compareValue="name">
+						seller_name asc,
+					</isEqual>	
+					
+					<isEqual property="sort" compareValue="date">
+						seller_reg_date desc,
+					</isEqual>	
+					
+					seller_no desc
+		
+	</select>
+
+	<select id="getTotalRows" parameterClass="map" resultClass="int">
+		
+		SELECT  count(*)
+				
+		FROM	(	SELECT DISTINCT 
+									A.seller_no,
+									A.seller_name,
+									A.seller_id,
+									LISTAGG(D.short_service_name, ', ') WITHIN GROUP (ORDER BY D.service_no) OVER (PARTITION BY A.seller_no) as service,						
+									A.seller_tel,
+									A.seller_reg_date
+											
+					FROM 			seller						A,
+									seller_info 				B,
+									seller_support_services 	C, 
+									seller_services 			D
+											 
+					WHERE			A.seller_del_yn = 'N'
+					AND				A.seller_no = B.seller_no
+					AND				B.seller_info_no = C.seller_info_no
+					AND 			C.service_no = D.service_no
+					
+					<isEqual property="opt" compareValue="id">
+				  		AND 	A.seller_id like '%'||#keyword#||'%'
+				  	</isEqual>			
+				  	   	 
+			      	<isEqual property="opt" compareValue="name">
+				  	 	AND 	A.seller_name like '%'||#keyword#||'%'
+				  	</isEqual>		
+				  	 	  	 
+			      	<isEqual property="opt" compareValue="tel">
+				  	 	AND 	A.seller_tel = #keyword#
+				  	</isEqual>		
+				  	 	  	 
+				  	<isNotNull property="fromDate">
+				  	 	AND 	A.seller_reg_date >= #fromDate# 
+				  	</isNotNull>	
+				  	 		  	 
+				  	<isNotNull property="toDate">
+				   	 	AND 	A.seller_reg_date &lt; to_date(#toDate#) + 1
+				  	</isNotNull>
+			
+					<isEqual property="service" compareValue="가정">
+						AND 	D.short_service_name = #service#
+					</isEqual>
+					
+					<isEqual property="service" compareValue="국내">
+						AND 	D.short_service_name = #service#
+					</isEqual>
+					 
+					<isEqual property="service" compareValue="원룸">
+						AND 	D.short_service_name = #service#
+					</isEqual>
+					 
+					<isEqual property="service" compareValue="사무실">
+						AND 	D.short_service_name = #service#
+					</isEqual>
+				)
+		
+	</select>
+</sqlMap>

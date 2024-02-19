@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+        PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+                
+<sqlMap namespace="seller-estimates">
+
+	<select id="getTotalUserEstimatesRows" parameterClass="map" resultClass="int">
+		select
+			count(*) 
+		from 
+			user_estimate E, building_type_category B, users U, moving_type_category M
+		where 
+		        E.user_no = U.user_no
+		        and E.user_moving_type = M.moving_type_no
+		        and E.user_estimate_building_type = B.building_type_no
+		       <isEqual property="isRead" compareValue="read">
+				and E.user_estimate_no in (select user_estimate_no
+										   from user_estimate
+										   intersect
+										   select user_estimate_no
+										   from seller_read_estimate
+										   where seller_no = #sellerNo#)
+		       </isEqual>
+		       <isEqual property="isRead" compareValue="notRead">
+				and E.user_estimate_no in (select user_estimate_no
+										   from user_estimate
+										   minus
+										   select user_estimate_no
+										   from seller_read_estimate
+										   where seller_no = #sellerNo#)
+		       </isEqual>
+		       <isEqual property="isEnded" compareValue="ended">
+		       <![CDATA[
+		       	and E.user_estimate_reg_date + 4 < (select sysdate
+		       										from dual)
+		       ]]>
+		       </isEqual>
+		       <isEqual property="isEnded" compareValue="notEnded">
+		       <![CDATA[
+		       	and E.user_estimate_reg_date + 4 >= (select sysdate
+		       										from dual)
+		       ]]>
+		       </isEqual>
+				order by E.user_estimate_no
+	</select>
+	
+	<select id="getUserEstimates" parameterClass="map" resultClass="vo.UserEstimate">
+		select
+		        E.user_estimate_no as "no",
+		        U.user_name as "users.name",
+		        U.user_address as "users.address",
+		        M.moving_type_name as "movingType.name",
+		        E.user_estimate_moving_date as "movingDate",
+		        E.user_estimate_moving_from_address as "movingFromAddress",
+		        E.user_estimate_moving_to_address as "movingToAddress",
+		        B.building_type_name as "buildingType.name",
+		        E.user_estimate_square_footage as "squareFootage",
+		        E.user_estimate_floors as "floors",
+		        E.user_estimate_rooms as "rooms",
+		        E.user_estimate_elevator_yn as "elevatorYn",
+		        E.user_estimate_content as "content"
+		from 
+		        user_estimate E, building_type_category B, users U, moving_type_category M
+		where 
+		        E.user_no = U.user_no
+		        and E.user_moving_type = M.moving_type_no
+		        and E.user_estimate_building_type = B.building_type_no
+		       <isEqual property="isRead" compareValue="read">
+				and E.user_estimate_no in (select user_estimate_no
+										   from user_estimate
+										   intersect
+										   select user_estimate_no
+										   from seller_read_estimate
+										   where seller_no = #sellerNo#)
+		       </isEqual>
+		       <isEqual property="isRead" compareValue="notRead">
+				and E.user_estimate_no in (select user_estimate_no
+										   from user_estimate
+										   minus
+										   select user_estimate_no
+										   from seller_read_estimate
+										   where seller_no = #sellerNo#)
+		       </isEqual>
+		       <isEqual property="isEnded" compareValue="ended">
+		       <![CDATA[
+		       	and E.user_estimate_reg_date + 4 < (select sysdate
+		       										from dual)
+		       ]]>
+		       </isEqual>
+		       <isEqual property="isEnded" compareValue="notEnded">
+		       <![CDATA[
+		       	and E.user_estimate_reg_date + 4 >= (select sysdate
+		       										from dual)
+		       ]]>
+		       </isEqual>
+				order by E.user_estimate_no
+	</select>
+	
+	<select id="getSellerNoByUserEstimateNo" parameterClass="int" resultClass="vo.SellerReadEstimate">
+		select 
+			user_estimate_no as "userEstimateNo",
+			seller_no as "sellerNo"
+		from 
+			seller_read_estimate
+		where 
+			user_estimate_no = #value#
+	</select>
+	
+	<insert id="insertSellerReadEstimate" parameterClass="map">
+		insert into seller_read_estimate
+		(user_estimate_no, seller_no)
+		values
+		(#userEstimateNo#, #sellerNo#)
+	</insert>
+	
+	<select id="getUserEstimateById" parameterClass="int" resultClass="vo.UserEstimate">
+		select
+			U.user_name as "users.name",
+			U.user_address as "users.address",
+			M.moving_type_name as "movingType.name",
+		    E.user_estimate_moving_date as "movingDate",
+		    E.user_estimate_moving_from_address as "movingFromAddress",
+		    E.user_estimate_moving_to_address as "movingToAddress",
+		    B.building_type_name as "buildingType.name",
+		    E.user_estimate_square_footage as "squareFootage",
+		    E.user_estimate_floors as "floors",
+		    E.user_estimate_rooms as "rooms",
+		    E.user_estimate_elevator_yn as "elevatorYn",
+		    E.user_estimate_content as "content"
+		from 
+			user_estimate E, building_type_category B, users U, moving_type_category M
+		where 
+			user_estimate_no = #value#
+			and E.user_no = U.user_no
+			and E.user_moving_type = M.moving_type_no
+			and E.user_estimate_building_type = B.building_type_no
+	</select>
+	
+	<select id="getObjectsById" parameterClass="int" resultClass="vo.UserEstimateObject">
+		select 
+			O.object_amount as "objectAmount", 
+			C.object_name as "object.name"
+		from 
+			user_estimate_objects O, main_object_category C
+		where 
+			O.user_estimate_no = #value#
+			and O.object_no = C.object_no
+	</select>
+	
+	<insert id="insertSellerEstimate" parameterClass="vo.SellerEstimate">
+		insert into seller_estimate
+		(seller_estimate_no, seller_no, user_estimate_no, seller_estimate_amount_setting, seller_estimate_amount, seller_estimate_content, status_no)
+		values
+		(#sellerEstimateNo#, #seller.no#, #userEstimate.no#, #amountSetting#, #amount#, #content#, #status.no#)
+	</insert>
+	
+	<select id="getSellerEstimatesByStatus" parameterClass="map" resultClass="dto.SellerEstimateStatusDto">
+		select 
+			S.seller_estimate_no as "sellerEstimateNo",
+			E.user_estimate_no as "userEstimateNo",
+			U.user_name as "userName", 
+			S.seller_estimate_amount as "sellerEstimateAmount",
+			E.user_estimate_moving_date as "userEstimateMovingDate"
+		from 
+			seller_estimate S, user_estimate E, users U
+		where seller_no = #sellerNo#
+			and S.user_estimate_no = E.user_estimate_no
+			and E.user_no = U.user_no
+			and S.status_no = #statusNo#
+		order by S.seller_estimate_reg_date desc
+	</select>
+	
+	<select id="getSellerEstimateById" parameterClass="int" resultClass="vo.SellerEstimate">
+		select 
+			seller_estimate_no as "sellerEstimateNo",
+			seller_estimate_amount_setting as "amountSetting", 
+		    seller_estimate_amount as "amount",
+		    seller_estimate_content as "content"
+		from seller_estimate
+		where seller_estimate_no = #value#
+	</select>
+	
+	<update id="updateSellerEstimate" parameterClass="vo.SellerEstimate">
+		update seller_estimate
+		set
+			seller_estimate_amount_setting = #amountSetting#,
+			seller_estimate_amount = #amount#,
+			seller_estimate_content = #content#
+		where
+			seller_estimate_no = #sellerEstimateNo#
+	</update>
+	
+	<update id="deleteSellerEstimate" parameterClass="int">
+		update seller_estimate
+		set
+			status_no = 100003
+		where
+			seller_estimate_no = #value#
+	</update>
+	
+	<select id="getSequence" resultClass="int">
+		select
+			seller_estimate_seq.nextval
+		from
+			dual
+	</select>
+	
+	<insert id="insertSellerEstimateImages" parameterClass="map">
+		insert into seller_estimate_images
+		(seller_estimate_img_no, seller_estimate_no, seller_estimate_img_path)
+		values
+		(seller_estimate_images_seq.nextval, #sellerEstimateNo#, #imgPath#)
+	</insert>
+	
+	<select id="getSellerEstimateList" parameterClass="int" resultClass="vo.SellerEstimate">
+		select
+			s.seller_no as "seller.no",
+			s.user_estimate_no as "userEstimate.no",
+			s.seller_estimate_amount as "amount",
+			s.seller_estimate_reg_date as "regDate",
+			s.seller_estimate_content as "content"
+		from
+			seller_estimate s, user_estimate u
+		where
+			u.user_estimate_no = s.user_estimate_no
+		and
+			u.user_no = #value#
+		order by
+			s.seller_estimate_reg_date desc
+	</select>
+
+</sqlMap>

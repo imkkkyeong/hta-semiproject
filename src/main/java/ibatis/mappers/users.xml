@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+   PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+   "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+   
+   
+<sqlMap namespace="users">
+	
+	<select id="getUserByNo" resultClass="vo.Users" parameterClass="int">
+		select
+			user_no as no,
+			user_id as id,
+			user_pwd as pwd,
+			user_name as name,
+			user_email as email,
+			user_tel as tel,
+			user_del_yn as delYn,
+			user_update_date as updateDate,
+			user_reg_date as regDate,
+			user_zipcode as zipcode,
+			user_address as address,
+			user_bname as bname,
+			user_detailed as detailed,
+			user_img_path as userImgPath
+		from 
+			users
+		where
+			user_no = #value#
+	</select>
+
+
+
+	<select id="getUserById" resultClass="vo.Users" parameterClass="string">
+		select
+			user_no as no,
+			user_id as id,
+			user_pwd as pwd,
+			user_name as name,
+			user_email as email,
+			user_tel as tel,
+			user_del_yn as delYn,
+			user_update_date as updateDate,
+			user_reg_date as regDate,
+			user_zipcode as zipcode,
+			user_address as address,
+			user_bname as bname,
+			user_detailed as detailed,
+			user_img_path as userImgPath
+		from 
+			users
+		where
+			user_id = #value#
+	</select>
+	<insert id="insertUsers" parameterClass="vo.Users">
+		insert into users
+		(user_no, user_id, user_pwd, user_name, user_email, user_tel, user_address, user_zipcode, user_bname, user_detailed)
+		values
+		(users_seq.nextval, #id#, #pwd#, #name#, #email#, #tel#, #address#, #zipcode#, #bname#, #detailed#)
+	</insert>
+	
+	
+	<update id="updatedUsers" parameterClass="vo.Users">
+		update users set
+			user_pwd = #pwd#,
+			user_name = #name#,
+			user_email = #email#,
+			user_tel = #tel#,
+			user_update_date = sysdate,
+			user_zipcode = #zipcode#,
+			user_address = #address#,
+			user_bname = #bname#,
+			user_detailed = #detailed#
+		where user_id = #id#
+	</update>
+</sqlMap>

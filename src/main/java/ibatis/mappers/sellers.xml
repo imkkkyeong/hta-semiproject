@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+        PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="sellers">
+
+	<insert id="insertSeller" parameterClass="vo.Seller">
+		insert into seller
+		(seller_no, seller_id, seller_pw, seller_name, seller_email, seller_tel)
+		values
+		(seller_seq.nextval, #id#, #password#, #name#, #email#, #tel#)
+	</insert>
+	
+	
+	<select id ="getSellerById"  parameterClass="string" resultClass="vo.Seller">
+		select 
+			seller_no			as no,
+			seller_id			as id,
+			seller_pw			as password,
+			seller_name 		as name,
+			seller_tel   		as tel,
+			seller_email		as email,
+			seller_reg_date		as regDate,
+			seller_update_date	as updateDate,
+			seller_del_yn		as delYn,
+			del_rsn_no		as rsnNo
+		from seller
+		where 
+			seller_id = #value#
+			
+	</select>
+
+</sqlMap>

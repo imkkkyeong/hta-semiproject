@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+	
+<sqlMap namespace="user-management">
+	
+	<select id="getUsers" parameterClass="map" resultClass="vo.Users">
+		
+		SELECT 		user_no 		as no,
+					user_name 		as name,
+					user_id 		as id,
+					user_tel 		as tel,
+					user_reg_date	as regDate
+				
+		FROM		(SELECT 	user_no,
+								user_id,
+								user_name,
+								user_tel,
+								user_reg_date,
+								row_number() over (order by user_no desc) AS num	
+									
+					FROM		users
+					
+					WHERE		user_del_yn = 'N'	
+					
+			      	<isEqual property="opt" compareValue="id">
+				  	AND 		user_id like '%'||#keyword#||'%'
+				 	</isEqual>
+				 	
+			    	<isEqual property="opt" compareValue="name">
+				    AND 		user_name like '%'||#keyword#||'%'
+				    </isEqual>
+				    
+			        <isEqual property="opt" compareValue="tel">
+				    AND 		user_tel = #keyword#
+				    </isEqual>
+				    
+				    <isNotNull property="fromDate">
+				    AND 		user_reg_date >= #fromDate# 
+				    </isNotNull>
+				    
+				    <isNotNull property="toDate">
+				    AND 		user_reg_date &lt; to_date(#toDate#) + 1
+				    </isNotNull>
+					)
+					
+		WHERE 		num between #begin# and #end#
+		
+		ORDER BY 	
+					<isEqual property="sort" compareValue="name">
+						user_name asc,
+					</isEqual>	
+					
+					<isEqual property="sort" compareValue="date">
+						user_reg_date desc,
+					</isEqual>	
+					
+					user_no desc	   
+
+	</select>
+	
+	<select id="getTotalRows" parameterClass="map" resultClass="int">
+
+		SELECT		count(*)
+		
+		FROM		users
+		
+		WHERE		user_del_yn = 'N'
+	  	<isEqual property="opt" compareValue="id">
+		AND 		user_id like '%'||#keyword#||'%'
+		</isEqual>
+		
+	    <isEqual property="opt" compareValue="name">
+		AND 		user_name like '%'||#keyword#||'%'
+		</isEqual>
+		
+	    <isEqual property="opt" compareValue="tel">
+		AND 		user_tel = #keyword#
+		</isEqual>
+		
+		<isNotNull property="fromDate">
+		AND 		user_reg_date >= #fromDate# 
+		</isNotNull>
+		
+		<isNotNull property="toDate">
+		AND 		user_reg_date &lt; to_date(#toDate#) + 1
+		</isNotNull>
+
+	</select>
+
+</sqlMap>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+        PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="board-image">
+
+     <insert id="insertBoardImage" parameterClass="vo.BoardImage">
+        INSERT INTO board_images (board_no, file_name, user_no)
+        VALUES (#board.no#, #fileName#, #users.no#)
+    </insert>
+    
+   
+
+    <!-- 게시물 이미지 리스트 조회 -->
+    <select id="getBoardImages" parameterClass="int" resultClass="string">
+        SELECT file_name
+        FROM board_images
+        where board_no = #value#
+    </select>
+    
+    <delete id="deleteBoardImage" parameterClass="int">
+    	delete from board_images
+    	where board_no = #value#
+    </delete>
+
+    <!--   <insert id="updateBoardImage" parameterClass="vo.BoardImage">
+        INSERT INTO board_images (board_no, file_name)
+        VALUES (#board.no#, #fileName#)
+    </insert>-->
+    
+
+
+</sqlMap>

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+	
+<sqlMap namespace="books">
+	 
+	<select id="getBooksByNo" parameterClass="int" resultClass="dto.admin.CalendarDto">
+		SELECT	B.status_name					AS status,
+				A.seller_estimate_no			AS estimateNo,
+				C.user_estimate_moving_date		AS movingDate,
+				D.moving_type_name				AS movingType,
+				E.user_name						AS name,
+				E.user_tel						AS tel
+				
+		FROM	seller_estimate A
+				, seller_estimate_status B
+				, user_estimate C
+				, moving_type_category D
+				, users E
+		
+		WHERE	A.status_no = B.status_no
+		AND 	A.user_estimate_no = C.user_estimate_no
+		AND		C.user_moving_type = D.moving_type_no
+		AND		C.user_no = E.user_no
+		AND		A.seller_no = #value#			
+		
+		ORDER BY A.seller_estimate_no desc	
+	</select>
+
+	<select id="getBooks" parameterClass="map" resultClass="dto.admin.BookDto">
+		
+		SELECT		user_estimate_no 			AS bookNo,				
+					name,		
+					tel,						
+					user_estimate_update_date 	AS updateDate
+				 
+		FROM		(SELECT  row_number() over (order by A.user_estimate_no desc) AS num,
+							 A.user_estimate_no,
+							 B.user_name										  AS name,
+							 B.user_tel											  AS tel,
+							 A.user_estimate_update_date 	
+							 	
+					 FROM  	 user_estimate A, users B
+					 
+					 WHERE   A.user_estimate_del_yn = 'N'
+					 AND	 A.user_no = B.user_no
+					 
+					 <isNotNull property="fromDate">
+					 AND	 A.user_estimate_update_date >= #fromDate#
+					 </isNotNull>
+					 
+					 <isNotNull property="toDate">
+					 AND	 A.user_estimate_update_date &lt; to_date(#toDate#) + 1
+					 </isNotNull>
+					 
+					 <isEqual property="opt" compareValue="no">
+					 AND 	 A.user_estimate_no = #keyword#
+					 </isEqual>
+					 
+					 <isEqual property="opt" compareValue="name">
+					 AND	 B.user_no in(SELECT user_no
+										  FROM users
+										  WHERE user_name = #keyword#)			
+					 </isEqual>
+					 
+					 <isEqual property="opt" compareValue="id">
+					 AND	 B.user_no in(SELECT user_no
+										  FROM users
+										  WHERE user_id = #keyword#)			
+					 </isEqual>
+					 ) 
+		
+		WHERE		num between #begin# and #end#
+		
+		ORDER BY	
+					<isEqual property="sort" compareValue="name">
+						name asc,
+					</isEqual>	
+					
+					<isEqual property="sort" compareValue="date">
+						user_estimate_update_date desc,
+					</isEqual>	
+					
+					user_estimate_no desc
+	</select>
+	
+	<!-- modifyform.jsp에서 사용 ************************************************************************ -->
+	
+	<select id="getAllBuildingTypes" resultClass="vo.admin.BuildingType">
+		
+		SELECT	building_type_no 		as no,
+				building_type_name 		as name
+		
+		FROM	building_type_category
+		
+		ORDER BY building_type_no asc
+		
+	</select>
+	
+	<select id="getBookInfoByNo" parameterClass="int" resultClass="dto.admin.BookInfo">
+		
+		SELECT	A.user_estimate_no 					AS bookNo,
+				B.user_name 						AS userName,
+				B.user_id							AS userId,
+				B.user_tel							AS userTel,
+				A.user_estimate_moving_date			AS movingDate,
+				A.user_estimate_building_type		AS buildingTypeNo,
+				A.user_estimate_square_footage		AS squareFootage,
+				A.user_estimate_floors				AS floor,
+				A.user_estimate_rooms				AS roomCnt,
+				A.user_estimate_elevator_yn			AS hasElevator,
+				A.user_estimate_content				AS content
+				
+		FROM	user_estimate						A
+				, users								B
+				, building_type_category			C
+				
+		WHERE	A.user_no = B.user_no
+		AND		A.user_estimate_building_type = C.building_type_no
+		AND 	A.user_estimate_no = #bookNo#
+		
+	</select>
+	
+	<update id="updateUserEstimateByBookInfo" parameterClass="dto.admin.BookInfo">
+		UPDATE	user_estimate
+		
+		SET		user_estimate_moving_date = #movingDate#,
+				user_estimate_building_type = #buildingTypeNo#,
+				user_estimate_square_footage = #squareFootage#,
+				user_estimate_floors = #floor#,
+				user_estimate_rooms = #roomCnt#,
+				user_estimate_elevator_yn = #hasElevator#
+		
+		WHERE	user_estimate_no = #bookNo#
+	</update>
+	
+	<!-- ****************************************************************************************** -->
+	
+	
+	<!-- delete.jsp에서 사용 ************************************************************************ -->
+	<update id="updateUserEstimateDelYNByBookNo" parameterClass="int">
+		UPDATE 	user_estimate
+		
+		SET		user_estimate_del_yn = 'Y'
+		
+		WHERE	user_estimate_no = #bookNo#
+	</update>
+	
+	<!-- ****************************************************************************************** -->
+	
+	<!--  페이징 처리 ******************************************************************************** -->
+	<select id="getTotalRows" parameterClass="map" resultClass="int">
+
+		SELECT		count(*)
+		
+		FROM		user_estimate
+		
+		WHERE		user_estimate_del_yn = 'N'	
+		<isNotNull property="fromDate">
+		AND			user_estimate_update_date >= #fromDate#
+		</isNotNull>
+		
+		<isNotNull property="toDate">
+		AND			user_estimate_update_date &lt; to_date(#toDate#) + 1
+		</isNotNull>
+		
+		<isEqual property="opt" compareValue="no">
+		AND 		user_estimate_no = #keyword#
+		</isEqual>
+		
+		<isEqual property="opt" compareValue="name">
+		AND			user_no in(SELECT user_no
+							   FROM users
+							   WHERE user_name = #keyword#)			
+		</isEqual>
+		
+		<isEqual property="opt" compareValue="id">
+		AND			user_no in(SELECT user_no
+							   FROM users
+							   WHERE user_id = #keyword#)			
+		</isEqual>
+
+	</select>
+	<!-- ****************************************************************************************** -->
+	
+</sqlMap>

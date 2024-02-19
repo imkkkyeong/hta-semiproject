@@ -1,0 +1,47 @@
+@charset "UTF-8";
+#loginBoxTitle {
+    font-family: 'Noto Sans', sans-serif;
+    text-align: center;
+    margin-bottom: 50px;
+}
+#TitleLink{
+	text-decoration : none;
+    color : black;
+}
+
+#welcomeBox{
+    text-align: center;
+}
+
+form{
+    margin-top: 50px;
+    height: 400px; 
+    width: 700px;
+
+}
+#welcomeTitle{
+    font-family: 'Noto Sans', sans-serif;
+    margin-bottom: 10px;
+    padding-bottom: 20px;
+}
+
+#welcomeContent {
+    font-family: 'Noto Sans', sans-serif;
+    font-weight: 100;
+    font-size: 15px;
+    color: gray;
+}
+#goHome {
+    text-decoration: none;
+    color: gray;
+    text-align: center;
+}
+#goRegi{
+	text-decoration: none;
+    color: gray;
+    text-align: center;
+}
+#homreRegiDiv{
+	
+	text-align: center;
+}

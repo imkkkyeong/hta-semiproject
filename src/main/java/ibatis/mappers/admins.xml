@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+	
+<sqlMap namespace="admins">
+
+	<insert id="insertAdmin" parameterClass="vo.admin.Admin">
+		insert into admin
+		(admin_no, admin_id, admin_pw, admin_name, admin_email, admin_tel)
+		values
+		(admin_seq.nextval, #id#, #pw#, #name#, #email#, #tel#)
+	</insert>
+	 
+	<select id="getAdminById" parameterClass="string" resultClass="vo.admin.Admin">
+		select
+			admin_no 			as no,
+			admin_id 			as id,
+			admin_pw			as pw,
+			admin_name 			as name,
+			admin_email 		as email,
+			admin_tel 			as tel,
+			admin_del_yn		as deleted,
+			admin_reg_date 		as createdDate,
+			admin_update_date 	as updatedDate
+		from
+			admin
+		where
+			admin_id = #value#				
+	</select>
+	
+	<select id="getAdminByEmail" parameterClass="string" resultClass="vo.admin.Admin">
+		select
+			admin_no 			as no,
+			admin_id 			as id,
+			admin_pw			as pw,
+			admin_name 			as name,
+			admin_email 		as email,
+			admin_tel 			as tel,
+			admin_del_yn		as deleted,
+			admin_reg_date  	as createdDate,
+			admin_update_date 	as updatedDate
+		from
+			admin
+		where
+			admin_email = #value#
+	</select>
+
+</sqlMap>
+
+
+
+
+
+
+
+
+
+

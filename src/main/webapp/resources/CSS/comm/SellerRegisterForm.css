@@ -1,0 +1,19 @@
+@charset "UTF-8";
+
+
+#registerBoxTitle {
+    font-family: 'Noto Sans', sans-serif;
+    text-align: center;
+    margin: 50px  0px  50px 0px;
+}
+
+#RegiLink{
+	text-decoration : none;
+    color : black;
+}
+
+#formTag{
+margin-top: 70px;
+height: auto; 
+width: 700px;
+}

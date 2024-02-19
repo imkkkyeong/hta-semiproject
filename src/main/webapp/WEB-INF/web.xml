@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://jakarta.ee/xml/ns/jakartaee" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd" id="WebApp_ID" version="5.0">
+  <display-name>moobb</display-name>
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+    <welcome-file>default.html</welcome-file>
+    <welcome-file>default.jsp</welcome-file>
+    <welcome-file>default.htm</welcome-file>
+  </welcome-file-list>
+  <servlet>
+    <description></description>
+    <display-name>calServlet</display-name>
+    <servlet-name>calServlet</servlet-name>
+    <servlet-class>calServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>calServlet</servlet-name>
+    <url-pattern>/cal.do</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>calendarServlet</display-name>
+    <servlet-name>calendarServlet</servlet-name>
+    <servlet-class>fullcalendar.calendarServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>calendarServlet</servlet-name>
+    <url-pattern>/calendar.do</url-pattern>
+  </servlet-mapping>
+  
+  <session-config>
+  	<session-timeout>120</session-timeout>
+  </session-config>
+</web-app>

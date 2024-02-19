@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+   PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+   "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+   
+	<sqlMap namespace="user_estimate">
+		
+		<select id="getSequence" resultClass="int">
+			select user_estimate_seq.nextval
+			from dual
+		</select>
+		
+		<insert id="insertUserEstimates" parameterClass="vo.UserEstimate">
+			insert into user_estimate
+			(user_estimate_no, user_no, user_estimate_moving_date, user_estimate_moving_from_address,
+			user_estimate_building_type, user_estimate_square_footage, user_estimate_floors,
+			user_estimate_rooms, user_estimate_moving_to_address, user_estimate_elevator_yn,
+			user_estimate_content, user_moving_type, user_estimate_from_zipcode, user_estimate_from_detailed,
+			user_estimate_from_bname, user_estimate_to_zipcode, user_estimate_to_detailed, user_estimate_to_bname)
+			values
+			(#no#, #users.no#, #movingDate#, #movingFromAddress#,
+			#buildingType.no#, #squareFootage#, #floors#, #rooms#, #movingToAddress#, #elevatorYn#,
+			#content#, #movingType.no#, #fromZipCode#, #fromDetailed#, #fromBname#, #toZipCode#, #toDetailed#, #toBname#)
+		</insert>
+	
+		<insert id="insertUserEstimatesObject" parameterClass="vo.UserEstimateObject">
+			insert into user_estimate_objects
+			(main_object_no, user_estimate_no, object_no, object_amount)
+			values
+			(MAIN_OBJECT_NO_SEQ.nextval, #userEstimate.no#, #object.no#, #objectAmount#)
+		</insert>
+		
+		<select id="getMainObjectCategories" resultClass="vo.MainObjectCategory">
+		
+			select object_no as no, object_name as name
+			from main_object_category
+			where object_no between 1 and 11
+			order by object_no asc
+		</select>
+		
+				
+		<select id="getAllUserEstimates" parameterClass="int" resultClass="vo.UserEstimate">
+			select 
+				e.user_estimate_no 										as no, 
+				e.user_no                                               as "users.no",
+				e.user_estimate_moving_date                             as movingDate,
+				m.moving_type_name                                      as "movingType.name",
+				e.user_estimate_moving_from_address      		        as movingFromAddress, 
+				e.user_estimate_moving_to_address                       as movingToAddress, 
+				e.user_estimate_reg_date                                as regDate
+			from 
+				user_estimate e, moving_type_category m
+			where 
+				user_no = #value#
+			and 
+				e.user_moving_type = m.moving_type_no
+			order by 
+				user_estimate_no desc
+		</select>
+		
+		
+		<select id="getTotalRows" parameterClass="map" resultClass="int">
+			select count(*)
+			from user_estimate 
+			where user_no = #userNo#
+		</select>
+		
+		<select id="getUserEstimates" parameterClass="map" resultClass="vo.UserEstimate">
+			select
+				user_estimate_no					as no,
+				user_no								as "users.no",
+			    moving_type_name  				as "movingType.name",
+				user_estimate_moving_date 			as movingDate,
+				user_estimate_moving_from_address 	as movingFromAddress,
+				user_estimate_moving_to_address		as movingToAddress,
+				user_estimate_reg_date				as regDate 
+			
+			
+			from (select row_number() over (order by user_estimate_no desc) as row_num,
+					e.user_estimate_no,
+					e.user_no,
+					e.user_estimate_moving_date,
+					m.moving_type_name,
+					e.user_estimate_moving_from_address,
+					e.user_estimate_moving_to_address,
+					e.user_estimate_reg_date
+				from
+					user_estimate e, moving_type_category m
+				where
+					user_no = #userNo# 
+				and 
+					e.user_moving_type = m.moving_type_no
+			)
+			where
+				row_num between #begin# and #end#
+		</select>
+	
+	
+		<select id="getIndexEsti" resultClass="vo.UserEstimate">
+		select 
+                  user_name 							as "users.name"			,
+			      user_estimate_moving_from_address 	as "movingFromAddress"	,
+			      user_estimate_moving_to_address 	as "movingToAddress"	,
+			      user_estimate_building_type 		as "buildingType.no"	,
+                  building_type_name				    as "buildingType.name" 		,
+                  user_estimate_reg_date 			    as "regDate"
+            from ( 
+                        SELECT
+                            B.user_name							,
+                            A.user_estimate_moving_from_address ,
+                            A.user_estimate_moving_to_address 	,
+                            A.user_estimate_building_type 		,
+                            C.building_type_name				,
+                            A.user_estimate_reg_date 			
+                        FROM
+                            user_estimate A, users B, building_type_category C
+                        WHERE
+                            A.user_no = B.user_no
+                            AND A.user_estimate_building_type = C.building_type_no
+                            ORDER BY DBMS_RANDOM.VALUE 
+                    )
+		where
+            ROWNUM &lt; 5
+		</select>
+	
+		
+	</sqlMap>

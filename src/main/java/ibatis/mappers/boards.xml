@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+        PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="boards">
+
+	<!--게시판 목록 시 사용 -->
+<select id="getBoards" parameterClass="map" resultClass="vo.Board">
+  SELECT 
+    BOARD_NO                    AS no,
+    BOARD_TITLE                 AS title,
+    USER_NO                     AS "users.no",
+    USER_ID                     AS "users.id",
+    BOARD_VIEW_CNT              AS viewCnt,
+    BOARD_LIKE_CNT              AS likeCnt,
+    BOARD_REPLY_CNT             AS replyCnt,
+    CATE_NO            			AS "boardCategory.no",
+    CATE_NAME          			AS "boardCategory.name",
+    SERVICE_NO        			AS "sellerService.no",
+    SERVICE_NAME      			AS "sellerService.name",
+    LOCATION_NO              	AS "location.no",
+    LOCATION_SIDO_NAME       	AS "location.sidoName",
+    BOARD_REG_DATE              AS regDate,
+    BOARD_CONTENT				AS CONTENT
+FROM  
+    (SELECT ROW_NUMBER() OVER (ORDER BY BOARD_NO DESC) ROW_NUM,
+            B.BOARD_NO,
+            B.BOARD_TITLE,
+            B.USER_NO,
+            U.USER_ID,
+            B.BOARD_VIEW_CNT,
+            B.BOARD_LIKE_CNT,
+            B.BOARD_REPLY_CNT,
+            BC.CATE_NO,
+            BC.CATE_NAME,
+            S.SERVICE_NO,
+            S.SERVICE_NAME,
+            L.LOCATION_NO,
+            L.LOCATION_SIDO_NAME,
+            B.BOARD_REG_DATE,
+            B.BOARD_CONTENT
+       FROM BOARD B, USERS U, board_categories BC, seller_services S, location L
+       WHERE B.BOARD_DEL_YN = 'N'
+      <isNotEqual property="serviceNo" compareValue="0">
+		    and S.SERVICE_No = #serviceNo#
+	  </isNotEqual>
+	  <isNotEqual property="locationNo" compareValue="0">
+		    and (L.LOCATION_NO in (select location_no 
+                                from location
+                                where parent_location_no = #locationNo#) or L.location_no = #locationNo#) 
+	  </isNotEqual>
+	  <isEqual property="opt" compareValue="title">
+			and b.board_title like '%' || #keyword# || '%'
+		</isEqual>
+		<isEqual property="opt" compareValue="writer">
+			and u.user_no in (select user_no
+			from users
+			where user_name = #keyword#)
+		</isEqual>
+		<isEqual property="opt" compareValue="content">
+			and board_content like '%' || #keyword# || '%'
+		</isEqual>
+       AND B.USER_NO = U.USER_NO
+       AND B.CATE_NO = BC.CATE_NO
+       AND B.SERVICE_NO = S.SERVICE_NO
+       AND B.LOCATION_NO = L.LOCATION_NO
+    )
+
+WHERE 
+    ROW_NUM BETWEEN #begin# AND #end#
+</select>
+
+
+
+	
+	<!-- 페이징 처리시 사용 -->
+	<select id="getTotalRows" parameterClass="map" resultClass="int">
+		SELECT COUNT(*)
+		FROM BOARD B, USERS U, seller_services S, location L
+		where B.BOARD_DEL_YN = 'N'
+		AND B.USER_NO = U.USER_NO
+        AND B.SERVICE_NO = S.SERVICE_NO
+        AND B.LOCATION_NO = L.LOCATION_NO
+      <isNotEqual property="serviceNo" compareValue="0">
+		    and S.SERVICE_No = #serviceNo#
+	  </isNotEqual>
+	  <isNotEqual property="locationNo" compareValue="0">
+		    and (L.LOCATION_NO in (select location_no 
+                                from location
+                                where parent_location_no = #locationNo#) or L.location_no = #locationNo#) 
+		    and L.LOCATION_NO = #locationNo#
+	  </isNotEqual>
+	  <isEqual property="opt" compareValue="title">
+			and b.board_title like '%' || #keyword# || '%'
+		</isEqual>
+		<isEqual property="opt" compareValue="writer">
+			and u.user_no in (select user_no
+			from users
+			where user_name = #keyword#)
+		</isEqual>
+		<isEqual property="opt" compareValue="content">
+			and b.board_content like '%' || #keyword# || '%'
+		</isEqual>
+	</select>
+	
+	
+	
+	<!-- 상세페이지 시 사용-->
+	<select id="getBoardByNo" parameterClass="int" resultClass="vo.Board">
+		SELECT
+		    B.BOARD_NO            AS no,
+		    B.BOARD_TITLE         AS title,
+		    bc.cate_no            as "boardCategory.no",
+		    bc.cate_name          as "boardCategory.name",
+		    B.USER_NO             AS "users.no",
+		    U.USER_ID             AS "users.id",
+		    B.BOARD_VIEW_CNT      AS viewCnt,
+		    B.BOARD_LIKE_CNT      AS likeCnt,
+		    B.BOARD_REPLY_CNT     AS replyCnt,
+		    B.board_del_yn        AS delYn,
+		    B.board_content       AS content,
+		    B.BOARD_REG_DATE      AS regDate,
+		    B.BOARD_UPDATE_DATE   AS updateDate,
+		    s.SERVICE_name        AS "sellerService.name",
+		    s.SERVICE_no          AS "sellerService.no",
+		    l.LOCATION_sido_name  AS "location.sidoName",
+		    l.LOCATION_no    AS "location.no"
+		   		    
+		FROM
+		    board B,
+		    users U,
+		    board_categories bc,
+		    seller_services s,
+		    location l
+		WHERE
+		    B.BOARD_NO = #VALUE#
+		    AND B.USER_NO = U.USER_NO
+		    AND B.CATE_NO = bc.CATE_NO
+		    AND B.SERVICE_NO = S.SERVICE_NO
+		    AND B.LOCATION_NO = l.LOCATION_NO
+	</select>
+
+
+	<select id="getBoardNo" resultClass="int">
+		select BOARDS_SEQ.NEXTVAL
+		from dual
+	</select>
+
+	<!-- 게시글 등록 -->
+	<insert id="insertBoard" parameterClass="vo.Board">
+    insert into board
+    (board_no , board_title, board_content, cate_no,user_no, location_no, service_no)
+    VALUES (#no#, #title#, #content#, #boardCategory.no#,#users.no#, #location.no#, #sellerService.no#)
+	</insert>
+
+
+	
+	<!-- 첨부파일 등록 -->
+
+	<!-- 게시글 수정 -->
+	<update id="updateBoard" parameterClass="vo.Board">
+		update board
+		set 
+		board_title = #title#,
+		board_content = #content#,
+		board_del_yn = #delYn#,
+		board_update_Date = sysdate
+		where board_no = #no#
+	</update>
+	
+		<!-- 게시판 카테고리를 조회해서 반환 -->
+	<select id="getAllBoardCategories" resultClass="vo.BoardCategory">
+		select
+			cate_no				as no,
+			cate_name			as name
+		from
+			Board_categories
+		order by 
+			cate_no asc
+	</select>
+	
+	<!-- 지역 :  시, 도 값 조회해서 반환 -->
+	<select id="getSidoLocations" resultClass="vo.Location">
+		select
+			location_no					as no,
+			location_sido_name			as sidoName,
+			location_gugun_name          as gugunName
+		from
+			location
+		where 
+			parent_location_no is null
+		order by 
+			location_no asc
+	</select>
+	
+	<!-- 지역 : 구, 군 값 조회해서 반환 -->
+	<select id="getGugunLocationsByParentLocationNo" parameterClass="int" resultClass="vo.Location">
+		select
+			location_no					as no,
+			location_sido_name			as sidoName,
+			location_gugun_name          as gugunName
+		from
+			location
+		where
+			parent_location_no = #value#
+		order by 
+			location_no asc
+	</select>
+	
+	<select id="getRandomBoard" resultClass="vo.Board">
+         select 
+                   board_title    as "title",
+                   board_content    as "content", 
+                   user_name       as "users.name", 
+                   board_reg_date   as "regDate"
+          from 
+              (
+                   select 
+                          a.board_title       , 
+                          a.board_content      ,
+                          b.user_name         ,
+                          a.board_reg_date
+                      from 
+                          board A , Users B
+                      where A.user_no = B.user_no    
+                     order by dbms_random.value
+              )
+          where
+              rownum &lt;5
+          
+   </select>
+	
+	
+	
+	
+	
+</sqlMap>

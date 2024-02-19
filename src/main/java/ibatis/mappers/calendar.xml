@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+	
+<sqlMap namespace="calendar">
+
+	<resultMap id="calendarRM" type="Calendar">
+    <id property="calendarNo" column="CALENDAR_NO" />
+    <result property="calendarTitle" column="CALENDAR_TITLE" />
+    <result property="calendarMemo" column="CALENDAR_MEMO" />
+    <result property="calendarStart" column="CALENDAR_START" />
+    <result property="calendarEnd" column="CALENDAR_END" />
+  	</resultMap>
+	
+	<select id="calendarList" resultMap="calendarRM">
+		select * from calendar 
+	</select>
+	
+</sqlMap>
+
+
+
+
+
+
+
+
+
+

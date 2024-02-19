@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap
+        PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+                
+<sqlMap namespace="seller-profiles">
+
+	<select id="getAllServices" resultClass="vo.SellerService">
+		select 
+			service_no as "no",
+			service_name as "name"
+		from seller_services
+	</select>
+	
+	<select id="getAllPays" resultClass="vo.Pay">
+		select
+			pay_no as "no",
+			pay_name as "name"
+		from pay
+	</select>
+	
+	<select id="getAllDistances" resultClass="vo.Distance">
+		select
+			distance_no as "no",
+			distance_name as "name"
+		from distance
+	</select>
+	
+	<select id ="getAllBanks" resultClass="vo.Bank">
+		select 
+			bank_no  as "no",
+			bank_name as "name"
+		from bank
+	</select>
+	
+	
+	<select id= "getSellerProfileBySellerNo" resultClass="vo.SellerInfo" parameterClass="int">
+		select 
+			s.SELLER_NO							as	"seller.no"		,
+			si.SELLER_INFO_NO					as  "infoNo"			,
+			si.SELLER_NICK_NAME 				as	"nickname"			,
+			si.SELLER_MEMO						as	"memo"				,
+			si.SELLER_ADDRESS					as	"address"			,
+			di.DISTANCE_NO						as	"distance.no"		,
+			di.DISTANCE_NAME					as	"distance.name"		,
+			si.SELLER_HIRE_EMPLOYEE_CNT			as	"hireEmployeeCnt"	,
+		    si.SELLER_DESCRIPTION				as	"description"		, 
+		    si.SELLER_BUSINESS_NO 				as	"businessNo"		, 
+		    si.SELLER_EXPERIENCE_YEAR 			as	"experienceYear"	, 
+		    si.SELLER_BANK_ACCOUNT				as	"bankAccount"		,
+		    b.BANK_NAME							as	"bank.name"			,	 
+		    b.BANK_NO							as	"bank.no"			,	 
+		    si.SELLER_MAIN_IMG_PATH				as	"mainImgPath"
+		from
+		    seller s , SELLER_INFO si ,DISTANCE di , bank b 
+		where
+		        si.SELLER_NO = #value#
+		  and
+		        s.SELLER_NO = si.SELLER_NO
+		  and
+		        si.BANK_NO = b.BANK_NO
+		  and
+		        si.DISTANCE_NO = di.DISTANCE_NO
+	</select>
+	
+	<!-- 판매자가 지원하는 서비스 종류 조회 -->
+	<select id="getSellerServiceByInfoNo" parameterClass="int" resultClass="vo.SellerSupportService">
+		select 
+			A.service_no 			as "service.no",
+			B.service_name			as "service.name",
+			A.most_service_yn 		as mostSerivceYn
+		from
+			seller_support_services A, seller_services B
+		where
+			A.seller_info_no = #value#
+			and A.service_no = B.service_no
+	</select>
+	
+	<!-- 판매자가 지원하는 결제종류 조회 -->
+	<select id ="getSellerPayByInfoNo" parameterClass="int" resultClass="vo.Pay">
+		select 
+			A.pay_no			as "no",
+			A.pay_name			as "name"
+		from 
+			pay A , seller_support_pays B
+		where
+			B.seller_info_no = #value#
+		and
+			A.pay_no = b.pay_no
+	</select>
+	
+	
+
+	<insert id ="insertInfo" parameterClass="vo.SellerInfo">
+	insert into seller_info
+		(seller_info_no , seller_no   , seller_nick_name , seller_memo , 
+		seller_address  , distance_no , seller_hire_employee_cnt , seller_description ,
+		seller_business_no , seller_experience_year , seller_bank_account , 
+		bank_no , seller_main_img_path)
+	values
+		(#infoNo# , #seller.no# , #nickname# , #memo# ,
+		#address# , #distance.no# , #hireEmployeeCnt# , #description# , 
+		#businessNo# , #experienceYear# , #bankAccount#  , 
+		#bank.no# , #mainImgPath#) 
+	</insert>
+	
+	
+	<select id="getSellerInfoSequence" resultClass="int">
+	select
+		seller_info_seq.nextval
+	from
+		dual
+	</select>
+	
+
+	<insert id="insertPay" parameterClass = "vo.SellerSupportPays">
+	insert into seller_support_pays
+		(seller_info_no , pay_no)
+	values
+		(#sellerInfo.infoNo# , #pay.no# )
+	</insert>
+	
+	
+
+<!-- seller_support_service 테이블에 
+	Most_service Y인 값만 저장하려고 만든 insert
+	대표 서비스에 등록에 사용 
+-->
+	<insert id="insertService" parameterClass="vo.SellerSupportService">
+	insert into seller_support_services
+		(seller_info_no , service_no ,most_service_YN)
+	values
+	 	(#sellerInfo.infoNo# , #service.no# , #mostSerivceYn#)
+	</insert>
+	
+<!-- seller_support_service 테이블에 
+	Most_service N인 값만 저장하려고 만든 insert
+	서브 서비스에 등록에 사용 
+-->	
+	
+	<update id="updateSellerInfo" parameterClass="vo.SellerInfo">
+		update seller_info set
+				seller_nick_name = #nickname# ,
+				seller_memo = #memo# ,
+				seller_address = #address# ,
+				distance_no = #distance.no# ,
+				seller_hire_employee_cnt = #hireEmployeeCnt# ,
+				seller_description = #description# ,
+				seller_business_no = #businessNo# ,
+				seller_experience_year = #experienceYear# ,
+				seller_bank_account = #bankAccount# ,
+				bank_no	= #bank.no# ,
+				seller_main_img_path = #mainImgPath#
+		where 
+				seller_info_no = #infoNo#
+	</update>
+	
+	
+	<delete id="deleteServiceBySellerInfo" parameterClass="int">
+		delete 
+			from 
+				seller_support_services
+			where
+				seller_info_no = #sellerInfo.infoNo#
+	</delete>
+
+	
+	
+	<delete id="deletePayBySellerInfo" parameterClass="int">
+		delete
+			from
+				seller_support_pays
+			where
+				seller_info_no = #sellerInfo.infoNo#
+	</delete>
+	
+	<!-- SellerInfo를 조회한다 , 랜덤하게 무작위로 조회하며 , 5개 미만의 글만 가져오게한다  -->
+	<select id="getSellerInfoAll" resultClass="vo.SellerInfo">
+	select 
+	    seller_nick_name 			as	"nickname", 
+	    seller_memo 				as	"memo",
+	    seller_address				as	"address" ,
+	    seller_hire_employee_cnt 	as	"hireEmployeeCnt"	
+	from    (
+	        	select 
+	            	seller_nick_name, 
+	            	seller_memo,
+	            	seller_address,
+	            	seller_hire_employee_cnt
+	        	from 
+	            	seller_INFO
+	        	order by DBMS_RANDOM.VALUE
+	    		)
+	where 
+	    ROWNUM &lt; 5
+	</select>
+</sqlMap>
